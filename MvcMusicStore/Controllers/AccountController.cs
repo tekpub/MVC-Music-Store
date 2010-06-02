@@ -25,7 +25,8 @@ namespace MvcMusicStore.Controllers
 
         // This constructor is not used by the MVC framework but is instead provided for ease
         // of unit testing this type. See the comments in AccountModels.cs for more information.
-        public AccountController(IFormsAuthenticationService formsService, IMembershipService membershipService)
+        public AccountController(IFormsAuthenticationService formsService, 
+            IMembershipService membershipService)
         {
             FormsService = formsService ?? new FormsAuthenticationService();
             MembershipService = membershipService ?? new AccountMembershipService();
@@ -114,7 +115,7 @@ namespace MvcMusicStore.Controllers
             {
                 if (MembershipService.ValidateUser(model.UserName, model.Password))
                 {
-                    MigrateShoppingCart(model.UserName);
+
 
                     FormsService.SignIn(model.UserName, model.RememberMe);
 
@@ -137,14 +138,7 @@ namespace MvcMusicStore.Controllers
             return View(model);
         }
 
-        private void MigrateShoppingCart(string UserName)
-        {
-            // Associate shopping cart items with logged-in user
-            var cart = ShoppingCart.GetCart(this.HttpContext);
 
-            cart.MigrateCart(UserName);
-            Session[ShoppingCart.CartSessionKey] = UserName;
-        }
 
         public ActionResult Register()
         {
@@ -161,7 +155,7 @@ namespace MvcMusicStore.Controllers
 
                 if (createStatus == MembershipCreateStatus.Success)
                 {
-                    MigrateShoppingCart(model.UserName);
+
 
                     FormsService.SignIn(model.UserName, false /* createPersistentCookie */);
                     return RedirectToAction("Index", "Home");

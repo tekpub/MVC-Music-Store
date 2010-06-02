@@ -9,7 +9,15 @@ namespace MvcMusicStore.Controllers
     [Authorize]
     public class CheckoutController : Controller
     {
-        MusicStoreEntities storeDB = new MusicStoreEntities();
+
+        IMusicRepo _repo;
+        IShoppingCart _cart;
+        string _cartid;
+        public CheckoutController(IMusicRepo repo, IShoppingCart cart) {
+            _repo = repo;
+            _cart = cart;
+            _cartid = MvcApplication.GetCartId();
+        }
         const string PromoCode = "FREE";
 
         //
@@ -24,6 +32,7 @@ namespace MvcMusicStore.Controllers
         // POST: /Checkout/AddressAndPayment
 
         [HttpPost]
+        [Transaction]
         public ActionResult AddressAndPayment(FormCollection values)
         {
             var order = new Order();
@@ -42,12 +51,10 @@ namespace MvcMusicStore.Controllers
                     order.OrderDate = DateTime.Now;
 
                     //Save Order
-                    storeDB.AddToOrders(order);
-                    storeDB.SaveChanges();
+                    _repo.Add(order);
 
                     //Process the order
-                    var cart = ShoppingCart.GetCart(this.HttpContext);
-                    cart.CreateOrder(order);
+                    _cart.CreateOrder(order,_cartid);
 
                     return RedirectToAction("Complete", 
                         new { id = order.OrderId });
@@ -63,11 +70,11 @@ namespace MvcMusicStore.Controllers
 
         //
         // GET: /Checkout/Complete
-
+        [Transaction]
         public ActionResult Complete(int id)
         {
             // Validate customer owns this order
-            bool isValid = storeDB.Orders.Any(
+            bool isValid = _repo.Orders.Any(
                 o => o.OrderId == id &&
                 o.Username == User.Identity.Name);
 

@@ -4,25 +4,32 @@ using MvcMusicStore.Models;
 using MvcMusicStore.ViewModels;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Web;
+using System;
 
 namespace MvcMusicStore.Controllers
 {
     public class ShoppingCartController : Controller
     {
-        MusicStoreEntities storeDB = new MusicStoreEntities();
-
+        IMusicRepo _repo;
+        IShoppingCart _cart;
+        string _cartid;
+        public ShoppingCartController(IMusicRepo repo, IShoppingCart cart) {
+            _repo = repo;
+            _cart = cart;
+            _cartid = MvcApplication.GetCartId();
+        }
         //
         // GET: /ShoppingCart/
 
         public ActionResult Index()
         {
-            var cart = ShoppingCart.GetCart(this.HttpContext);
 
             // Set up our ViewModel
             var viewModel = new ShoppingCartViewModel
             {
-                CartItems = cart.GetCartItems(),
-                CartTotal = cart.GetTotal()
+                CartItems = _cart.GetCartItems(_cartid),
+                CartTotal = _cart.GetTotal(_cartid)
             };
 
             // Return the view
@@ -31,19 +38,16 @@ namespace MvcMusicStore.Controllers
 
         //
         // GET: /Store/AddToCart/5
-
+        [Transaction]
         public ActionResult AddToCart(int id)
         {
 
             // Retrieve the album from the database
-            var addedAlbum = storeDB.Albums
+            var addedAlbum = _repo.Albums
                 .Single(album => album.AlbumId == id);
 
-            // Add it to the shopping cart
-            var cart = ShoppingCart.GetCart(this.HttpContext);
-
-            cart.AddToCart(addedAlbum);
-
+            _cart.AddToCart(addedAlbum, _cartid);
+            
             // Go back to the main store page for more shopping
             return RedirectToAction("Index");
         }
@@ -52,25 +56,23 @@ namespace MvcMusicStore.Controllers
         // AJAX: /ShoppingCart/RemoveFromCart/5
 
         [HttpPost]
+        [Transaction]
         public ActionResult RemoveFromCart(int id)
         {
-            // Remove the item from the cart
-            var cart = ShoppingCart.GetCart(this.HttpContext);
-
             // Get the name of the album to display confirmation
-            string albumName = storeDB.Carts
+            string albumName = _repo.Carts
                 .Single(item => item.RecordId == id).Album.Title;
 
             // Remove from cart. Note that for simplicity, we're 
             // removing all rather than decrementing the count.
-            cart.RemoveFromCart(id);
+            _cart.RemoveFromCart(id, _cartid);
 
             // Display the confirmation message
             var results = new ShoppingCartRemoveViewModel { 
                 Message = Server.HtmlEncode(albumName) + 
                     " has been removed from your shopping cart.",
-                CartTotal = cart.GetTotal(),
-                CartCount = cart.GetCount(),
+                CartTotal = _cart.GetTotal(_cartid),
+                CartCount = _cart.GetCount(_cartid),
                 DeleteId = id 
             };
 
@@ -83,11 +85,12 @@ namespace MvcMusicStore.Controllers
         [ChildActionOnly]
         public ActionResult CartSummary()
         {
-            var cart = ShoppingCart.GetCart(this.HttpContext);
 
-            ViewData["CartCount"] = cart.GetCount();
+            ViewData["CartCount"] = _cart.GetCount(_cartid);
 
             return PartialView("CartSummary");
         }
+
+
     }
 }

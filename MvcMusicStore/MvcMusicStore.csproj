@@ -34,6 +34,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Ninject">
+      <HintPath>..\lib\Ninject.dll</HintPath>
+    </Reference>
+    <Reference Include="Ninject.Web.Mvc">
+      <HintPath>..\lib\Ninject.Web.Mvc.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Entity" />
@@ -78,12 +84,17 @@
     <Compile Include="Controllers\ShoppingCartController.cs" />
     <Compile Include="Controllers\StoreController.cs" />
     <Compile Include="Controllers\StoreManagerController.cs" />
+    <Compile Include="Controllers\TransactionAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\HtmlHelpers.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\Album.cs" />
+    <Compile Include="Models\IMusicRepo.cs" />
+    <Compile Include="Models\IShoppingCart.cs" />
+    <Compile Include="Models\MusicRepo.cs" />
+    <Compile Include="Models\MusicStoreEntities.cs" />
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\ShoppingCart.cs" />
     <Compile Include="Models\StoreDB.Designer.cs">
