@@ -11,15 +11,11 @@ build/
 [Oo]bj/
 
 *.suo
-
-*.sln
 .cache
 _ReSharper.*/
 *.user
-
 *.wmv
 *.flv
 *.mp4
 *.f4v
-*.config
-App_Data/
+
